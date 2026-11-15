@@ -1,8 +1,10 @@
-# NezhaGate agent skills
+# KovAPI agent skills
 
 Agent Skills that let coding agents (Claude Code, Codex, Cursor and other skill-aware agents) use the
-[NezhaGate](https://nezhagate.com) API directly: ask in plain words, and the agent picks the model,
+[KovAPI](https://kovapi.com) API directly: ask in plain words, and the agent picks the model,
 sends your files, waits for the job and saves the result.
+
+> KovAPI is the new name of NezhaGate (since 2026-10-31). API keys, balances and the `nezhagate.com` API address keep working, and `NEZHAGATE_API_KEY` is still read when `KOVAPI_API_KEY` is not set.
 
 [中文说明](README.zh-CN.md)
 
@@ -20,13 +22,13 @@ sends your files, waits for the job and saves the result.
 One line, from our site:
 
 ```bash
-npx skills add https://nezhagate.com
+npx skills add https://kovapi.com
 ```
 
 or from this repository:
 
 ```bash
-npx skills add gaoorange/nezhagate-skills
+npx skills add gaoorange/kovapi-skills
 ```
 
 Manual install: copy `skills/nezhagate-seedance/` into your agent's skills folder, for example
@@ -34,15 +36,15 @@ Manual install: copy `skills/nezhagate-seedance/` into your agent's skills folde
 
 ## Set your key
 
-Create a key at <https://nezhagate.com/keys>, then make it available to the agent:
+Create a key at <https://kovapi.com/keys>, then make it available to the agent:
 
 ```bash
-export NEZHAGATE_API_KEY=your_key            # macOS / Linux
+export KOVAPI_API_KEY=your_key            # macOS / Linux
 ```
 
 ```powershell
-$env:NEZHAGATE_API_KEY = "your_key"           # Windows PowerShell (current window)
-setx NEZHAGATE_API_KEY "your_key"             # Windows, for windows opened later
+$env:KOVAPI_API_KEY = "your_key"           # Windows PowerShell (current window)
+setx KOVAPI_API_KEY "your_key"             # Windows, for windows opened later
 ```
 
 Start the agent from a shell where the variable is set. The skill never needs the key in your project files.
@@ -75,20 +77,20 @@ The prompt behind the demo clip:
 > temple bells ring. Slow dolly-in from medium shot to close-up, shallow depth of field, warm rim light, film grain,
 > soft strings over the city hum.
 
-## How NezhaGate runs your jobs
+## How KovAPI runs your jobs
 
 - **Failed renders cost nothing**: the amount is reserved at submit and refunded in full if a render fails.
 - **Your content stays yours**: prompts and outputs are never used for training; the text of your calls is deleted
-  after 30 days and generated files after 60 days ([privacy policy](https://nezhagate.com/privacy)).
-- **Live status**: real success rates are published at <https://nezhagate.com/status>.
+  after 30 days and generated files after 7 days ([privacy policy](https://kovapi.com/privacy)).
+- **Live status**: real success rates are published at <https://kovapi.com/status>.
 
-Some Seedance models bill per second and others per clip, in NezhaGate credits. Current prices: `--models` or
-<https://nezhagate.com/en/pricing>.
+Some Seedance models bill per second and others per clip, in KovAPI credits. Current prices: `--models` or
+<https://kovapi.com/en/pricing>.
 
 ## For maintainers
 
 `well-known/agent-skills/` holds the [agentskills.io](https://agentskills.io) discovery index and the
-archive it points to, served at `https://nezhagate.com/.well-known/agent-skills/`. Rebuild both after editing a skill:
+archive it points to, served at `https://kovapi.com/.well-known/agent-skills/`. Rebuild both after editing a skill:
 
 ```bash
 python tools/build_archive.py

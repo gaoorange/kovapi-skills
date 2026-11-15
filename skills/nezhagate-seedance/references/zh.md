@@ -1,30 +1,30 @@
-# 在 NezhaGate 上用 Seedance 生成视频
+# 在 KovAPI 上用 Seedance 生成视频
 
-NezhaGate 通过一个 OpenAI 风格的异步接口提供字节跳动的 Seedance 视频模型。本文是基础使用说明：
+KovAPI 通过一个 OpenAI 风格的异步接口提供字节跳动的 Seedance 视频模型。本文是基础使用说明：
 查型号、组请求、付钱前自检、提交、等待、下载、处理失败。
 
 English: [../SKILL.md](../SKILL.md)
 
 ## 规则
 
-1. **从环境变量 `NEZHAGATE_API_KEY` 读取密钥。** 不要把它贴进对话、代码、日志或提交记录。
-   每个接口请求都带 `Authorization: Bearer $NEZHAGATE_API_KEY`。创建密钥：<https://nezhagate.com/keys>。
+1. **从环境变量 `KOVAPI_API_KEY` 读取密钥**（旧名 `NEZHAGATE_API_KEY` 也认）。 不要把它贴进对话、代码、日志或提交记录。
+   每个接口请求都带 `Authorization: Bearer $KOVAPI_API_KEY`。创建密钥：<https://kovapi.com/keys>。
 2. **用之前先查型号。** 型号、上限和价格会变，所以本文不列具体数字。
    `python scripts/seedance.py --models` 列出在售的 Seedance 型号和实时价格；
-   `python scripts/seedance.py --doc <型号>` 打印该型号的参数和上限（内容同 `https://nezhagate.com/en/docs/<型号>/md`）。
+   `python scripts/seedance.py --doc <型号>` 打印该型号的参数和上限（内容同 `https://kovapi.com/en/docs/<型号>/md`）。
    两个命令都不需要密钥。
 3. **提交前先自检**（见下一节）。每次渲染都要花钱、要等几分钟；请求组错了（提示词只剩第一行、
    参考素材没带上）照样计费。
 4. **视频是异步任务。** `POST /v1/videos/generations` 返回 HTTP **202** 和任务 id，之后轮询
    `GET /v1/videos/jobs/{id}`，直到 `status` 为 `succeeded` 或 `failed`。
-5. **图片都是参考图，不是首帧。** NezhaGate 上的 Seedance 全系没有首帧 / 尾帧控制：图片决定人物、物体、
+5. **图片都是参考图，不是首帧。** KovAPI 上的 Seedance 全系没有首帧 / 尾帧控制：图片决定人物、物体、
    场景和风格。按传入顺序在提示词里写 `@Image1`、`@Image2`……点名，视频和音频同理写 `@Video1`、`@Audio1`。
 6. **每条成片都带声音，不能关闭。** 对白、音效和配乐由模型按提示词生成，所以不要传 `audio`：
    `false` 在 Seedance 2.5 / 2.0 / 2.0 Fast 上不起作用，在 2.0 Clip / 2.5 30s 上会被拒绝。
    提示词里的台词、旁白和歌词会被念出来或唱出来，声音和画面一起审核；用户不想要人声，就别在提示词里写这些。
 7. **参数越界直接返回 HTTP 400 和可读的原因，绝不悄悄改动。** 不扣费。改好请求再提交，不要原样重发。
 8. **失败的任务全额退款。** `content_policy`（内容审核未通过）对这份内容是终局：改提示词或素材，不要原样重交。
-9. **出片后立刻下载。** 成片链接保留 60 天；NezhaGate 代为托管的参考素材保留 7 天。
+9. **出片后立刻下载。** 成片链接和 KovAPI 代为托管的参考素材都保留 7 天。
 
 ## 付钱前先自检
 
@@ -65,13 +65,13 @@ English: [../SKILL.md](../SKILL.md)
 ```bash
 python scripts/seedance.py --balance
 # 或者
-curl -s https://nezhagate.com/v1/dashboard/billing/credit_grants -H "Authorization: Bearer $NEZHAGATE_API_KEY"
+curl -s https://kovapi.com/v1/dashboard/billing/credit_grants -H "Authorization: Bearer $KOVAPI_API_KEY"
 # -> {"total_available": 12.34, "credits": 2468, ...}   （单位美元；200 积分 = $1）
 ```
 
 ## 请求字段
 
-`POST https://nezhagate.com/v1/videos/generations`。某个型号接受哪些字段、哪些取值，看它的文档（`--doc <型号>`）。
+`POST https://kovapi.com/v1/videos/generations`。某个型号接受哪些字段、哪些取值，看它的文档（`--doc <型号>`）。
 
 | 字段 | 类型 | 说明 |
 |---|---|---|
@@ -92,11 +92,11 @@ curl -s https://nezhagate.com/v1/dashboard/billing/credit_grants -H "Authorizati
 - 视频：mp4 / mov，每段不超过 50 MB，单次请求内联合计不超过 100 MB；可传链接或 `data:video/mp4;base64,...`。
 - 音频：mp3 / wav / m4a；可传链接或 `data:audio/mpeg;base64,...`。
 
-本地文件要读出字节、编成 `data:` URI 发送，NezhaGate 托管后再交给模型。脚本已经替你做好。
+本地文件要读出字节、编成 `data:` URI 发送，KovAPI 托管后再交给模型。脚本已经替你做好。
 
 ```bash
-curl -s https://nezhagate.com/v1/videos/generations \
-  -H "Authorization: Bearer $NEZHAGATE_API_KEY" -H 'Content-Type: application/json' \
+curl -s https://kovapi.com/v1/videos/generations \
+  -H "Authorization: Bearer $KOVAPI_API_KEY" -H 'Content-Type: application/json' \
   -d '{"model":"seedance-2.5","prompt":"黄昏的天台上，@Image1 里的女人转身望向镜头微笑；镜头缓慢推近。","images":["https://example.com/woman.png"],"duration":8,"resolution":"720P","size":"16:9"}'
 # -> 202 {"id":"img_3f9a...","object":"video.generation.job","status":"queued","created":1790000000,"model":"seedance-2.5"}
 ```
@@ -106,7 +106,7 @@ curl -s https://nezhagate.com/v1/videos/generations \
 ## 等待与下载
 
 ```bash
-curl -s https://nezhagate.com/v1/videos/jobs/img_3f9a... -H "Authorization: Bearer $NEZHAGATE_API_KEY"
+curl -s https://kovapi.com/v1/videos/jobs/img_3f9a... -H "Authorization: Bearer $KOVAPI_API_KEY"
 ```
 
 | `status` | 含义 | 附带字段 |
@@ -129,8 +129,8 @@ curl -s https://nezhagate.com/v1/videos/jobs/img_3f9a... -H "Authorization: Bear
 | 状态码 | 含义 | 怎么办 |
 |---|---|---|
 | 400 | 参数或上限不符，或参考素材被拒（`message` 会写明）；`code` 为 `model_coming_soon` / `model_disabled` 表示该型号或档位未开放 | 改请求；换型号或档位 |
-| 401 / 403 | 没带密钥、密钥无效，或密钥限制了来源 IP | 检查 `NEZHAGATE_API_KEY` |
-| 402 | 余额不足 | 到 <https://nezhagate.com/billing> 充值 |
+| 401 / 403 | 没带密钥、密钥无效，或密钥限制了来源 IP | 检查 `KOVAPI_API_KEY` |
+| 402 | 余额不足 | 到 <https://kovapi.com/billing> 充值 |
 | 429 | 限流 | 稍等后重试一次 |
 | 503 | 参考素材暂存失败（我方临时问题，未计费） | 稍等后重试一次 |
 | 其他 5xx | 网关故障 | 稍等后重试一次 |

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Make a Seedance video on NezhaGate: check -> submit -> wait -> download. Python 3.8+, standard library only.
+"""Make a Seedance video on KovAPI: check -> submit -> wait -> download. Python 3.8+, standard library only.
 
     python seedance.py --models                 # Seedance models on sale now, with live prices (no key needed)
     python seedance.py --doc seedance-2.5       # one model's parameters and limits (no key needed)
@@ -15,8 +15,9 @@ meant to send before you submit. The script refuses to submit when the prompt na
 not attached, or when the whole prompt is one heading line (the rest of a multi-line prompt was lost);
 --force overrides that.
 
-The API key is read from NEZHAGATE_API_KEY and is never printed or sent anywhere but the API host.
-NEZHAGATE_BASE_URL overrides the base URL (default https://nezhagate.com/v1).
+The API key is read from KOVAPI_API_KEY (the old name NEZHAGATE_API_KEY also works) and is never
+printed or sent anywhere but the API host. KOVAPI_BASE_URL (or NEZHAGATE_BASE_URL) overrides the base
+URL (default https://kovapi.com/v1).
 Progress goes to stderr; the result is JSON on stdout.
 
 Exit codes: 0 ok, 2 bad arguments or the check found a problem, 3 auth, 4 balance, 5 request refused,
@@ -38,8 +39,8 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
-VERSION = '1.1.1'
-DEFAULT_BASE = 'https://nezhagate.com/v1'
+VERSION = '1.2.0'
+DEFAULT_BASE = 'https://kovapi.com/v1'
 UA = 'nezhagate-seedance-skill/' + VERSION
 MB = 1024 * 1024
 MAX_FILE = {'image': 16 * MB, 'video': 50 * MB}
@@ -309,10 +310,10 @@ def shorten(body):
 
 
 def api_key():
-    key = (os.environ.get('NEZHAGATE_API_KEY') or '').strip()
+    key = (os.environ.get('KOVAPI_API_KEY') or os.environ.get('NEZHAGATE_API_KEY') or '').strip()
     if not key:
-        raise Fail(3, 'NEZHAGATE_API_KEY is not set (create a key at https://nezhagate.com/keys, then '
-                      'export NEZHAGATE_API_KEY=... or on Windows: $env:NEZHAGATE_API_KEY = "...")')
+        raise Fail(3, 'KOVAPI_API_KEY is not set (create a key at https://kovapi.com/keys, then '
+                      'export KOVAPI_API_KEY=... or on Windows: $env:KOVAPI_API_KEY = "...")')
     return key
 
 
@@ -350,7 +351,7 @@ def raise_for(status, obj, what):
     if status in (401, 403):
         raise Fail(3, tag)
     if status == 402:
-        raise Fail(4, tag + ' (top up at https://nezhagate.com/billing)')
+        raise Fail(4, tag + ' (top up at https://kovapi.com/billing)')
     if status == 429:
         raise Fail(6, tag)
     if 400 <= status < 500:
@@ -372,7 +373,7 @@ def download(url, out):
             part.unlink()
         except OSError:
             pass
-        raise Fail(10, 'download failed (%s); the link stays valid for 60 days: %s' % (getattr(e, 'reason', e), url))
+        raise Fail(10, 'download failed (%s); the link stays valid for 7 days: %s' % (getattr(e, 'reason', e), url))
 
 
 def wait(base, key, job_id, a, est=None):
@@ -438,7 +439,7 @@ def main(argv=None):
             stream.reconfigure(errors='replace')
         except (AttributeError, ValueError):
             pass
-    ap = argparse.ArgumentParser(description='Make a Seedance video on NezhaGate: check, submit, wait, download.')
+    ap = argparse.ArgumentParser(description='Make a Seedance video on KovAPI: check, submit, wait, download.')
     ap.add_argument('--model', default='seedance-2.5', help='model id (default seedance-2.5; list them with --models)')
     ap.add_argument('--prompt-file', help='read the prompt from a text file (use this for long or multi-line prompts)')
     ap.add_argument('--prompt', help='prompt text, for a short one-line prompt')
@@ -465,7 +466,7 @@ def main(argv=None):
     ap.add_argument('--balance', action='store_true', help='print the account balance')
     ap.add_argument('--version', action='version', version='%(prog)s ' + VERSION)
     a = ap.parse_args(argv)
-    base = (os.environ.get('NEZHAGATE_BASE_URL') or DEFAULT_BASE).rstrip('/')
+    base = (os.environ.get('KOVAPI_BASE_URL') or os.environ.get('NEZHAGATE_BASE_URL') or DEFAULT_BASE).rstrip('/')
     site = base[:-3] if base.endswith('/v1') else base
     try:
         if a.models:

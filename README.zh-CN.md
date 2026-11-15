@@ -1,7 +1,9 @@
-# NezhaGate Agent Skills
+# KovAPI Agent Skills
 
-让 Claude Code、Codex、Cursor 等支持 skill 的 AI 编程助手直接调用 [NezhaGate](https://nezhagate.com) 接口：
+让 Claude Code、Codex、Cursor 等支持 skill 的 AI 编程助手直接调用 [KovAPI](https://kovapi.com) 接口：
 用一句话说出你要什么，助手会自己选模型、上传素材、等任务完成、把成片存到你指定的位置。
+
+> KovAPI 是 NezhaGate 的新名字（2026-10-31 起）。原来的 API Key、余额和 `nezhagate.com` 的 API 地址都照常可用；没设 `KOVAPI_API_KEY` 时仍会读取 `NEZHAGATE_API_KEY`。
 
 [English](README.md)
 
@@ -20,28 +22,28 @@
 一行命令，从我们网站安装：
 
 ```bash
-npx skills add https://nezhagate.com
+npx skills add https://kovapi.com
 ```
 
 或者从本仓库安装：
 
 ```bash
-npx skills add gaoorange/nezhagate-skills
+npx skills add gaoorange/kovapi-skills
 ```
 
 也可以手动安装：把 `skills/nezhagate-seedance/` 复制到助手的 skills 目录，比如 Claude Code 是 `~/.claude/skills/nezhagate-seedance/`，Codex 是 `~/.codex/skills/nezhagate-seedance/`。
 
 ## 设置 key
 
-在 <https://nezhagate.com/keys> 创建 key，然后设成环境变量：
+在 <https://kovapi.com/keys> 创建 key，然后设成环境变量：
 
 ```bash
-export NEZHAGATE_API_KEY=你的key            # macOS / Linux
+export KOVAPI_API_KEY=你的key            # macOS / Linux
 ```
 
 ```powershell
-$env:NEZHAGATE_API_KEY = "你的key"           # Windows PowerShell（当前窗口）
-setx NEZHAGATE_API_KEY "你的key"             # Windows（之后新开的窗口）
+$env:KOVAPI_API_KEY = "你的key"           # Windows PowerShell（当前窗口）
+setx KOVAPI_API_KEY "你的key"             # Windows（之后新开的窗口）
 ```
 
 在设置了这个变量的终端里启动助手即可，key 不需要写进项目文件。
@@ -56,13 +58,13 @@ setx NEZHAGATE_API_KEY "你的key"             # Windows（之后新开的窗口
 也可以自己运行脚本：`--models` 查在售型号和价格，加 `--dry-run` 先检查请求（不提交、不花钱），
 长的或多行的提示词写进 UTF-8 文件后用 `--prompt-file` 传。
 
-## NezhaGate 怎么对待你的任务
+## KovAPI 怎么对待你的任务
 
 - **失败不扣费**：提交时冻结费用，渲染失败全额退回。
-- **内容只属于你**：提示词和生成结果绝不用于训练；调用的文字内容 30 天后删除，生成文件 60 天后删除（[隐私政策](https://nezhagate.com/privacy)）。
-- **状态公开**：真实成功率公布在 <https://nezhagate.com/status>。
+- **内容只属于你**：提示词和生成结果绝不用于训练；调用的文字内容 30 天后删除，生成文件 7 天后删除（[隐私政策](https://kovapi.com/privacy)）。
+- **状态公开**：真实成功率公布在 <https://kovapi.com/status>。
 
-Seedance 有的型号按秒计费、有的按条计费，实时价格用 `--models` 查，或见 <https://nezhagate.com/pricing>。
+Seedance 有的型号按秒计费、有的按条计费，实时价格用 `--models` 查，或见 <https://kovapi.com/pricing>。
 
 ## 许可
 

@@ -1,11 +1,11 @@
 ---
 name: nezhagate-seedance
-description: Generate videos with ByteDance Seedance (Seedance 2.5, Seedance 2.0, 2.0 Fast, 2.0 Clip, 2.5 30s) through the NezhaGate API (https://nezhagate.com/v1) - text-to-video and video from reference images, reference videos and reference audio. Use when the user asks to make, render or script a Seedance video, mentions seedance / Seedance 2.5 / Seedance 2.0 / NezhaGate, or wants text-to-video, image-to-video or video generation from a coding agent. Covers the live model list and prices, local reference files, a check before paying, submit, polling, download and error handling.
+description: Generate videos with ByteDance Seedance (Seedance 2.5, Seedance 2.0, 2.0 Fast, 2.0 Clip, 2.5 30s) through the KovAPI API (https://kovapi.com/v1) - text-to-video and video from reference images, reference videos and reference audio. Use when the user asks to make, render or script a Seedance video, mentions seedance / Seedance 2.5 / Seedance 2.0 / KovAPI / NezhaGate (its old name), or wants text-to-video, image-to-video or video generation from a coding agent. Covers the live model list and prices, local reference files, a check before paying, submit, polling, download and error handling.
 ---
 
-# Seedance video on NezhaGate
+# Seedance video on KovAPI
 
-NezhaGate serves ByteDance's Seedance video models behind one OpenAI-style async endpoint. This is the
+KovAPI serves ByteDance's Seedance video models behind one OpenAI-style async endpoint. This is the
 basic usage guide: look the model up, build the request, check it before paying, submit, wait, download
 and handle errors.
 
@@ -13,18 +13,18 @@ and handle errors.
 
 ## Rules
 
-1. **Read the key from `NEZHAGATE_API_KEY`.** Never paste it into chat, code, logs or commits. Every API
-   request sends `Authorization: Bearer $NEZHAGATE_API_KEY`. Keys: <https://nezhagate.com/keys>.
+1. **Read the key from `KOVAPI_API_KEY`** (`NEZHAGATE_API_KEY`, the old name, also works). Never paste it into chat, code, logs or commits. Every API
+   request sends `Authorization: Bearer $KOVAPI_API_KEY`. Keys: <https://kovapi.com/keys>.
 2. **Look the model up before you use it.** Models, limits and prices change, so this guide does not list
    them. `python scripts/seedance.py --models` prints the Seedance models on sale with live prices, and
    `python scripts/seedance.py --doc <model>` prints one model's parameters and limits (the same text as
-   `https://nezhagate.com/en/docs/<model>/md`). Neither needs a key.
+   `https://kovapi.com/en/docs/<model>/md`). Neither needs a key.
 3. **Check the request before you submit** (next section). A render costs money and takes minutes, and a
    request that was built wrong (a prompt cut to its first line, reference files left out) is billed like
    any other.
 4. **Video is asynchronous.** `POST /v1/videos/generations` returns HTTP **202** with a job id. Poll
    `GET /v1/videos/jobs/{id}` until `status` is `succeeded` or `failed`.
-5. **Images are references, never first frames.** No Seedance model on NezhaGate has first-frame or
+5. **Images are references, never first frames.** No Seedance model on KovAPI has first-frame or
    last-frame control: images set the characters, objects, scene and style. Name them in the prompt as
    `@Image1`, `@Image2`... in the order you send them, and likewise `@Video1`, `@Audio1`.
 6. **Every clip comes with sound, and it cannot be switched off.** The model writes dialogue, effects and
@@ -35,8 +35,8 @@ and handle errors.
    Nothing is charged. Fix the request; do not resend the same body.
 8. **Failed jobs are refunded in full.** A `content_policy` failure is final for that content: change the
    prompt or references instead of resubmitting.
-9. **Download the result right away.** Result links are kept for 60 days; reference files NezhaGate hosts
-   for you are kept for 7 days.
+9. **Download the result right away.** Result links, and the reference files KovAPI hosts for you,
+   are kept for 7 days.
 
 ## Check before you pay
 
@@ -81,13 +81,13 @@ little balance the submit gets HTTP 402.
 ```bash
 python scripts/seedance.py --balance
 # or
-curl -s https://nezhagate.com/v1/dashboard/billing/credit_grants -H "Authorization: Bearer $NEZHAGATE_API_KEY"
+curl -s https://kovapi.com/v1/dashboard/billing/credit_grants -H "Authorization: Bearer $KOVAPI_API_KEY"
 # -> {"total_available": 12.34, "credits": 2468, ...}   (USD; 200 credits = $1)
 ```
 
 ## Request fields
 
-`POST https://nezhagate.com/v1/videos/generations`. Which fields and values a model takes is in its doc
+`POST https://kovapi.com/v1/videos/generations`. Which fields and values a model takes is in its doc
 (`--doc <model>`).
 
 | Field | Type | Notes |
@@ -109,12 +109,12 @@ Media can be a public `https://` URL or inline data:
 - Videos: mp4 / mov, up to 50 MB each and 100 MB inline per request; a URL or `data:video/mp4;base64,...`.
 - Audio: mp3 / wav / m4a; a URL or `data:audio/mpeg;base64,...`.
 
-A local file has to be read and sent as a `data:` URI; NezhaGate hosts it and passes the link on. The
+A local file has to be read and sent as a `data:` URI; KovAPI hosts it and passes the link on. The
 script does this for you.
 
 ```bash
-curl -s https://nezhagate.com/v1/videos/generations \
-  -H "Authorization: Bearer $NEZHAGATE_API_KEY" -H 'Content-Type: application/json' \
+curl -s https://kovapi.com/v1/videos/generations \
+  -H "Authorization: Bearer $KOVAPI_API_KEY" -H 'Content-Type: application/json' \
   -d '{"model":"seedance-2.5","prompt":"Golden hour on a rooftop. The woman from @Image1 turns to the camera and smiles; slow dolly in.","images":["https://example.com/woman.png"],"duration":8,"resolution":"720P","size":"16:9"}'
 # -> 202 {"id":"img_3f9a...","object":"video.generation.job","status":"queued","created":1790000000,"model":"seedance-2.5"}
 ```
@@ -124,7 +124,7 @@ You can submit several jobs at once; extra ones wait in the queue.
 ## Wait and download
 
 ```bash
-curl -s https://nezhagate.com/v1/videos/jobs/img_3f9a... -H "Authorization: Bearer $NEZHAGATE_API_KEY"
+curl -s https://kovapi.com/v1/videos/jobs/img_3f9a... -H "Authorization: Bearer $KOVAPI_API_KEY"
 ```
 
 | `status` | Meaning | Extra fields |
@@ -148,10 +148,10 @@ At submit (HTTP status of the POST):
 | Status | Meaning | What to do |
 |---|---|---|
 | 400 | A parameter or limit was violated, or a reference file was refused (`message` says which); `code` = `model_coming_soon` / `model_disabled` for a closed model or tier | Fix the request; pick another model or tier |
-| 401 / 403 | Missing or invalid key, or the key is IP-restricted | Check `NEZHAGATE_API_KEY` |
-| 402 | Not enough balance | Top up at <https://nezhagate.com/billing> |
+| 401 / 403 | Missing or invalid key, or the key is IP-restricted | Check `KOVAPI_API_KEY` |
+| 402 | Not enough balance | Top up at <https://kovapi.com/billing> |
 | 429 | Rate limited | Wait and retry once |
-| 503 | A reference file could not be stored on NezhaGate's side (temporary, not charged) | Retry once after a pause |
+| 503 | A reference file could not be stored on KovAPI's side (temporary, not charged) | Retry once after a pause |
 | other 5xx | Gateway trouble | Retry once after a pause |
 
 Failed job (`status=failed`, look at `error.code`):
